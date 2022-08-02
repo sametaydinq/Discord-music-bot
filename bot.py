@@ -116,4 +116,4 @@ async def viewqueue(ctx : Context):
 
  
  
-bot.run("MTAwNDA3ODcxMzI3MDQ0MDEzMQ.G9LPyt.anwEhw84TVHqCTPU60VFoeYnT7qD4JMVOgPACY")
+bot.run("TOKEN")
