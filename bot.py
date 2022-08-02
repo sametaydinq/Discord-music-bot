@@ -4,9 +4,6 @@ from nextcord.ext.commands import Context
 
 
 
-
-
-
 queuelist = []
 filestodelete = []
 
