@@ -78,7 +78,7 @@ async def play(ctx : Context, *, searchword):
         except IndexError:
             for file in filestodelete:
                 os.remove(f"{file}.mp3")
-            filestodelete.clear()   
+            filestodelete.clear()     
  
 #Stop, Resume and Pause
 @bot.command()
