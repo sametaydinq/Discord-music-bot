@@ -1,10 +1,10 @@
 from nextcord.ext import commands
 import nextcord, youtube_dl, os, asyncio
 from nextcord.ext.commands import Context
-from dotenv import load_dotenv
 
-load_dotenv()
-TOKEN = os.getenv("TOKEN")
+
+
+
 
 
 queuelist = []
