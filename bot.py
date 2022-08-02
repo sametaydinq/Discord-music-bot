@@ -9,8 +9,17 @@ filestodelete = []
 
 intents = nextcord.Intents.all()
 
+
+
+
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(
     '++'), intents=intents) 
+
+
+@bot.event
+async def on_ready():  # executes when bot is activated
+
+    await bot.get_channel(994370179343589406).send("A")
 
 @bot.command()
 @commands.has_role("DJ")
