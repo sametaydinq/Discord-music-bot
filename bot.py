@@ -18,7 +18,6 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(
     '++'), intents=intents)
 
 
-nextcord.opus.load_opus()
 
 
 @bot.event
