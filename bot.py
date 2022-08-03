@@ -1,19 +1,12 @@
-import yt_dlp as youtube_dl  # geçici
+import yt_dlp
 from nextcord.ext import commands
 import nextcord
 import os
-import asyncio  # youtube_dl
+import asyncio  # yt_dlp
 from nextcord.ext.commands import Context
 
 
-
-
-queuelist = []
-filestodelete = []
-
 intents = nextcord.Intents.all()
-
-
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(
     '++'), intents=intents)
 
@@ -25,6 +18,10 @@ async def on_ready():  # executes when bot is activated
     print("bot activated")
     await bot.get_channel(994370179343589406).send("Selam")
 
+
+
+queuelist = []
+filestodelete = []
 
 @bot.command()
 async def join(ctx: Context):
@@ -43,13 +40,13 @@ async def play(ctx: Context, *, searchword):
 
     # Get the Title
     if searchword[0:4] == "http" or searchword[0:3] == "www":
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(searchword, download=False)
             title = info["title"]
             url = searchword
 
     if searchword[0:4] != "http" and searchword[0:3] != "www":
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"ytsearch:{searchword}", download=False)[
                 "entries"][0]
             title = info["title"]
@@ -64,7 +61,7 @@ async def play(ctx: Context, *, searchword):
 
     # Downloads the Audio File with the Title, it is run in a different thread so that the bot can communicate to the discord server while downloading
     def download(url):
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, download, url)
