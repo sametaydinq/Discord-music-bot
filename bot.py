@@ -4,7 +4,7 @@ import nextcord
 import os
 import asyncio  # yt_dlp
 from nextcord.ext.commands import Context
-
+from xd import SAMET_TOKEN, TESTBOT_TOKEN
 
 intents = nextcord.Intents.all()
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(
@@ -13,4 +13,4 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(
 
 bot.load_extension("musiccog")
 
-bot.run("MTAwNDA3ODcxMzI3MDQ0MDEzMQ.GopAq1.w67e6cA9BtmWfInncoughloUpQxp9yS9x_UShQ")
+bot.run(SAMET_TOKEN)

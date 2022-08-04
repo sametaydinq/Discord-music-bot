@@ -30,7 +30,7 @@ class Music(commands.Cog):
         await ctx.voice_client.disconnect()
         queuelist = []
         await ctx.message.add_reaction("✅")
-
+    
     @commands.command(aliases=["p"])
     async def play(self, ctx: Context, *, searchword):
         await ctx.message.add_reaction("<a:loading:1004527255575334972>")
