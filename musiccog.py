@@ -6,13 +6,12 @@ import asyncio
 import os
 
 intents = nextcord.Intents.all()
-intents.members = True
 
 filestodelete = []
-queuelist = []
+queuelist = {}
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(
-    '--'), intents=intents, help_command=None)
+    '++'), intents=intents, help_command=None)
 
 
 class Music(commands.Cog):
@@ -21,6 +20,8 @@ class Music(commands.Cog):
 
     @commands.command(aliases=["connect"])
     async def join(self, ctx: Context):
+        guildId = ctx.guild.id
+        queuelist[guildId] = []
         await ctx.author.voice.channel.connect()
         await ctx.message.add_reaction("✅")
 
@@ -28,9 +29,8 @@ class Music(commands.Cog):
     async def leave(self, ctx: Context):
         global queuelist
         await ctx.voice_client.disconnect()
-        queuelist = []
         await ctx.message.add_reaction("✅")
-    
+
     @commands.command(aliases=["p"])
     async def play(self, ctx: Context, *, searchword):
         await ctx.message.add_reaction("<a:loading:1004527255575334972>")
@@ -51,7 +51,7 @@ class Music(commands.Cog):
                 title = info["title"]
                 url = info["webpage_url"]
 
-        title = title.replace(':', '')
+        title = title.replace(':', 'x')
 
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -70,14 +70,14 @@ class Music(commands.Cog):
 
         # Playing and Queueing Audio
         if voice.is_playing():
-            queuelist.append(title)
-            await ctx.message.clear_reactions()
+            queuelist[ctx.guild.id].append(title)
+            await ctx.message.clear_reaction("<a:loading:1004527255575334972>")
             await ctx.message.add_reaction("✅")
             await ctx.send(f"Added to Queue: ** {title} **")
         else:
             voice.play(nextcord.FFmpegPCMAudio(
                 f"{title}.mp3"), after=lambda e: check_queue())
-            await ctx.message.clear_reactions()
+            await ctx.message.clear_reaction("<a:loading:1004527255575334972>")
             await ctx.message.add_reaction("✅")
             await ctx.send(f"Playing ** {title} ** :musical_note:")
             filestodelete.append(title)
@@ -87,13 +87,14 @@ class Music(commands.Cog):
         # if there is no song in the queuelist, it deletes all the files in filestodelete
         def check_queue():
             try:
-                if queuelist[0] != None:
+                if queuelist[ctx.guild.id][0] != None:
                     voice.play(nextcord.FFmpegPCMAudio(
-                        f"{queuelist[0]}.mp3"), after=lambda e: check_queue())
-                    fut = asyncio.run_coroutine_threadsafe(bot.loop)
-                    fut.result()
-                    filestodelete.append(queuelist[0])
-                    queuelist.pop(0)
+                        f"{queuelist[ctx.guild.id][0]}.mp3"), after=lambda e: check_queue())
+                    # coro = bot.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name=active_guild_count))
+                    # fut = asyncio.run_coroutine_threadsafe(coro, bot.loop)
+                    # fut.result()
+                    filestodelete.append(queuelist[ctx.guild.id][0])
+                    queuelist[ctx.guild.id].pop(0)
             except IndexError:
                 for file in filestodelete:
                     os.remove(f"{file}.mp3")
@@ -123,12 +124,12 @@ class Music(commands.Cog):
     @commands.command(aliases=["viewqueue"])
     async def queue(self, ctx: Context):
         await ctx.message.add_reaction("✅")
-        await ctx.send(f"Queue:  ** {str(queuelist)} ** ")
+        await ctx.send(f"Queue:  ** {str(queuelist[ctx.guild.id])} ** ")
 
     @commands.command()
     async def clearqueue(self, ctx: Context):
         global queuelist
-        queuelist = []
+        queuelist[ctx.guild.id] = []
         await ctx.message.add_reaction("✅")
 
 def setup(bot):
