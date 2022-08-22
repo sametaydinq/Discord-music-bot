@@ -4,22 +4,20 @@ from nextcord.ext.commands import Context
 import yt_dlp
 import asyncio
 import os
-
+from bot import bot
 intents = nextcord.Intents.all()
+intents.members = True
 
 filestodelete = []
 queuelist = {}
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(
-    '++'), intents=intents, help_command=None)
-
-
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
+        
     @commands.command(aliases=["connect"])
     async def join(self, ctx: Context):
+        global queuelist
         guildId = ctx.guild.id
         queuelist[guildId] = []
         await ctx.author.voice.channel.connect()
@@ -27,12 +25,12 @@ class Music(commands.Cog):
 
     @commands.command(aliases=["disconnect"])
     async def leave(self, ctx: Context):
-        global queuelist
         await ctx.voice_client.disconnect()
         await ctx.message.add_reaction("✅")
 
     @commands.command(aliases=["p"])
     async def play(self, ctx: Context, *, searchword):
+        global queuelist
         await ctx.message.add_reaction("<a:loading:1004527255575334972>")
         ydl_opts = {}
         voice = ctx.voice_client
@@ -51,7 +49,7 @@ class Music(commands.Cog):
                 title = info["title"]
                 url = info["webpage_url"]
 
-        title = title.replace(':', 'x')
+        title = title.replace(':', '')
 
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -85,11 +83,14 @@ class Music(commands.Cog):
         # the after function that gets called after the first song ends, then it checks whether a song is in the queuelist
         # if there is a song in the queuelist, it plays that song
         # if there is no song in the queuelist, it deletes all the files in filestodelete
-        def check_queue():
+        async def check_queue():
+            global queuelist
+            
             try:
                 if queuelist[ctx.guild.id][0] != None:
                     voice.play(nextcord.FFmpegPCMAudio(
                         f"{queuelist[ctx.guild.id][0]}.mp3"), after=lambda e: check_queue())
+                    await ctx.send(f"Playing ** {queuelist[ctx.guild.id][0]} ** :musical_note:")
                     # coro = bot.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name=active_guild_count))
                     # fut = asyncio.run_coroutine_threadsafe(coro, bot.loop)
                     # fut.result()
@@ -123,13 +124,14 @@ class Music(commands.Cog):
     # function that displays the current queue
     @commands.command(aliases=["viewqueue"])
     async def queue(self, ctx: Context):
+        global queuelist
         await ctx.message.add_reaction("✅")
         await ctx.send(f"Queue:  ** {str(queuelist[ctx.guild.id])} ** ")
 
     @commands.command()
     async def clearqueue(self, ctx: Context):
         global queuelist
-        queuelist[ctx.guild.id] = []
+        queuelist[ctx.guild.id].clear()
         await ctx.message.add_reaction("✅")
 
 def setup(bot):
