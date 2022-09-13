@@ -4,7 +4,7 @@ from nextcord.ext.commands import Context
 import yt_dlp
 import asyncio
 import os
-from bot import bot
+
 intents = nextcord.Intents.all()
 intents.members = True
 
@@ -21,13 +21,19 @@ class Music(commands.Cog):
         guildId = ctx.guild.id
         queuelist[guildId] = []
         await ctx.author.voice.channel.connect()
-        await ctx.message.add_reaction("✅")
+        try:
+            await ctx.message.add_reaction("✅")
+        except:
+            pass
 
+        
     @commands.command(aliases=["disconnect"])
     async def leave(self, ctx: Context):
         await ctx.voice_client.disconnect()
-        await ctx.message.add_reaction("✅")
-
+        try:
+            await ctx.message.add_reaction("✅")
+        except:
+            pass
     @commands.command(aliases=["p"])
     async def play(self, ctx: Context, *, searchword):
         global queuelist
@@ -70,13 +76,19 @@ class Music(commands.Cog):
         if voice.is_playing():
             queuelist[ctx.guild.id].append(title)
             await ctx.message.clear_reaction("<a:loading:1004527255575334972>")
-            await ctx.message.add_reaction("✅")
+            try:
+                await ctx.message.add_reaction("✅")
+            except:
+                pass
             await ctx.send(f"Added to Queue: ** {title} **")
         else:
             voice.play(nextcord.FFmpegPCMAudio(
                 f"{title}.mp3"), after=lambda e: check_queue())
-            await ctx.message.clear_reaction("<a:loading:1004527255575334972>")
-            await ctx.message.add_reaction("✅")
+            try:
+                await ctx.message.clear_reaction("<a:loading:1004527255575334972>")
+                await ctx.message.add_reaction("✅")
+            except:
+                pass
             await ctx.send(f"Playing ** {title} ** :musical_note:")
             filestodelete.append(title)
 
@@ -108,7 +120,10 @@ class Music(commands.Cog):
         voice = ctx.voice_client
         if voice.is_playing() == True:
             voice.pause()
-            await ctx.message.add_reaction("✅")
+            try:
+                await ctx.message.add_reaction("✅")
+            except:
+                pass
         else:
             await ctx.send("Bot is not playing Audio!")
 
@@ -119,20 +134,59 @@ class Music(commands.Cog):
             await ctx.send("Bot is playing Audio!")
         else:
             voice.resume()
-            await ctx.message.add_reaction("✅")
+            try:
+                await ctx.message.add_reaction("✅")
+            except:
+                pass
 
     # function that displays the current queue
     @commands.command(aliases=["viewqueue"])
     async def queue(self, ctx: Context):
         global queuelist
-        await ctx.message.add_reaction("✅")
+        try:
+            await ctx.message.add_reaction("✅")
+        except:
+            pass
         await ctx.send(f"Queue:  ** {str(queuelist[ctx.guild.id])} ** ")
 
     @commands.command()
     async def clearqueue(self, ctx: Context):
         global queuelist
         queuelist[ctx.guild.id].clear()
-        await ctx.message.add_reaction("✅")
+        try:
+            await ctx.message.add_reaction("✅")
+        except:
+            pass
+
+    @join.error
+    async def errorhandler(self, ctx: Context, error):
+        if isinstance(error, commands.errors.CommandInvokeError):
+            await ctx.send("You have to be connected to a Voice Channel to use this command.")
+
+
+    @leave.error
+    async def errorhandler(self, ctx: Context, error):
+        if isinstance(error, commands.errors.CommandInvokeError):
+            await ctx.send("Bot is not connected to a Voice Channel.")
+
+
+    @play.error
+    async def errorhandler(self, ctx: Context, error):
+        if isinstance(error, commands.errors.CommandInvokeError):
+            await ctx.send("Bot is not connected to a Voice Channel.")
+
+
+    @resume.error
+    async def errorhandler(self, ctx: Context, error):
+        if isinstance(error, commands.errors.CommandInvokeError):
+            await ctx.send("Bot is not connected to a Voice Channel.")
+
+
+    @pause.error
+    async def errorhandler(self, ctx: Context, error):
+        if isinstance(error, commands.errors.CommandInvokeError):
+            await ctx.send("Bot is not connected to a Voice Channel.")
+
 
 def setup(bot):
     bot.add_cog(Music(bot))
